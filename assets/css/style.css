@@ -1,0 +1,28 @@
+ul {
+    list-style-type: none !important;
+}
+
+.logo-atilla {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.logo-atilla img {
+  width: 200px;
+}
+
+.img-no-style {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.full-width {
+  width: 100vw !important;
+  margin-left: -25vw !important;
+}
+
+.large-text {
+  font-size: 1.3em !important;
+}

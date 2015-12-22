@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+
+    <title>Python dict • Atilla</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="assets/revealjs/css/reveal.css">
+    <link rel="stylesheet" href="assets/css/blood.css" id="theme">
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="stylesheet" href="assets/revealjs/lib/css/zenburn.css">
+    <link rel="stylesheet" href="assets/css/font-awesome.css">
+
+</head>
+
+<body>
+
+    <form class="login">
+        <span>
+            What's your secret key?
+        </span>
+
+        <input type="password" placeholder="Please enter your secret key!"/>
+        <input type="submit" value="➡" />f
+    </form>
+
+    <div class="reveal blurred">
+
+        <div class="logo-atilla">
+            <img src="assets/img/logo.png"/>
+        </div>
+
+        <div class="slides">
+
+            <!-- Titre -->
+            <section>
+                <h1>Python <code>dict</code></h1>
+                <h3>How are they implemented?</h3>
+                <footer>
+                    <small>Flavien Raynaud</small><br>
+                    <small>19/11/2015</small>
+                </footer>
+            </section>
+
+            <section>
+
+                <section>
+                    <h2>Dict, wtf?</h2>
+
+                    <p>dict = dictionary</p>
+                    <p>Store key-value pairs</p>
+
+<pre><code class="python"># name -> number of students
+promotions = {
+    "cpi-1": 180,
+    "cpi-2": 130,
+    "ing-1": 140,
+    "ing-2": 150,
+    "ing-3": 130
+}
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>More complicated...</h2>
+
+<pre><code class="python">data = {
+    "pony": True,
+    math.pi: "yolo",
+    True: 123
+}
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>dict</h2>
+
+                    <p>Average constant-time access</p>
+
+                    <p>Fast access? lists</p>
+
+                    <p><b>How to turn dict keys into list indices?</b></p>
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h3>Three rules of Python dicts</h3>
+                </section>
+
+                <section>
+                    <h2>Rule #1</h2>
+
+                    <p>A dict is a list.</p>
+
+                    <div class="fragment">
+<pre><code class="python">data = {} # empty dictionary: list of length 8</code></pre>
+
+                        <img src="assets/img/insert0.png" height="350px" class="img-no-style">
+                        <br>
+
+                        Hashtable
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Rule #2</h2>
+
+                    <p>Keys are <i>hashed</i> to produce indices.</p>
+                </section>
+
+                <section>
+                    <h2>A matter of hash…</h2>
+
+                    <p><code>hash</code> builtin</p>
+
+<pre><code class="python">
+Python 3.4.3 (default, Aug 11 2015, 08:57:25)
+[GCC 4.2.1 Compatible Apple LLVM 6.1.0 (clang-602.0.53)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> hash(42)
+42
+>>> hash("sample")
+1503967873891231655
+>>> hash(3.14)
+322818021289917443
+>>> hash(True)
+1
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>A matter of hash…</h2>
+
+<pre><code class="python">>>> bits(hash(42))
+00000000000000000000000000101010
+>>> bits(hash("sample"))
+01010110011001001111100010100101
+>>> bits(hash(3.14))
+10101110000101000111110000000011
+>>> bits(hash(True))
+00000000000000000000000000000001
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>Hash functions</h2>
+
+<pre><code class="python">>>> bits(hash("Play"))
+10110011101001011101110111001010
+>>> bits(hash("Pray"))
+11001001000111110100110010110110
+</code></pre>
+
+                    <p>Similar values do not have similar hashes</p>
+
+                    <div class="fragment">
+<pre><code class="python">>>> bits(hash("Play"))
+10110011101001011101110111001010
+>>> bits(hash("Play"))
+10110011101001011101110111001010
+</code></pre>
+
+                        <p>Same value, same hash!</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Key to index</h2>
+
+                    <p>
+                        Index of key <code>x</code>:<br>
+                        last bits of <code>hash(x)</code>
+                    </p>
+                </section>
+
+                <section>
+<pre><code class="python">>>> ports["ftp"] = 21
+>>> bits(hash("ftp"))
+00101011001101000100100010100001
+>>> bits(hash("ftp"))[-3:]
+001
+</code></pre>
+
+                    <img src="assets/img/insert1b.png" height="350px" class="img-no-style fragment">
+                </section>
+
+                <section>
+<pre><code class="python">>>> ports["ssh"] = 22
+>>> bits(hash("ssh"))[-3:]
+101
+</code></pre>
+
+                    <img src="assets/img/insert2b.png" height="350px" class="img-no-style fragment">
+                </section>
+
+                <section>
+<pre><code class="python">>>> ports["www"] = 80
+>>> bits(hash("www"))[-3:]
+010
+>>> ports["time"] = 37
+>>> bits(hash("time"))[-3:]
+111
+>>> ports["smtp"] = 25
+>>> bits(hash("smtp"))[-3:]
+100
+</code></pre>
+
+                    <img src="assets/img/insert6.png" height="350px" class="img-no-style">
+                </section>
+
+                <section>
+                    <img src="assets/img/insert6.png" height="350px" class="img-no-style">
+
+<pre><code class="python">>>> ports.keys()
+["ftp", "www", "smtp", "ssh", "time"]
+>>> ports.values()
+[21, 80, 25, 22, 37]
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>Rule #3</h2>
+
+                    <p>If at first you don't succeed, try again.</p>
+                </section>
+
+                <section>
+                    <h2>Collision</h2>
+
+                    <p>What if two keys share the same index?</p>
+
+                    <p><b>Open Addressing</b></p>
+                </section>
+
+                <section>
+<pre><code class="python">>>> ports["smtp"] = 25
+>>> bits(hash("smtp"))[-3:]
+100
+</code></pre>
+
+                    <img src="assets/img/collide1b.png" height="350px" class="img-no-style">
+                </section>
+
+                <section>
+<pre><code class="python">>>> ports["dict"] = 2628
+>>> bits(hash("dict"))[-3:]
+100
+</code></pre>
+
+                    <img src="assets/img/collide2a.png" height="350px" class="img-no-style">
+                </section>
+
+                <section data-transition="slide-in fade-out">
+<pre><code class="python">>>> ports["dict"] = 2628
+>>> bits(hash("dict"))[-3:]
+100
+</code></pre>
+
+                    <img src="assets/img/collide2b.png" height="350px" class="img-no-style">
+                </section>
+            </section>
+
+            <section>
+                <section>
+                    <h2>Lookup</h2>
+
+                    <p>More complicated than just « hash, truncate, look »</p>
+
+                    <p class="fragment"><b>Until you find an empty slot, jump.</b></p>
+                </section>
+
+                <section>
+                    <h2>Direct lookup</h2>
+
+                    <img src="assets/img/collide5d.png" height="350px" class="img-no-style">
+
+<pre><code class="python">>>> ports["svn"]
+3690
+>>> bits(hash("svn"))[-3:]
+000
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>Indirect lookup</h2>
+
+                    <img src="assets/img/collide5e.png" height="350px" class="img-no-style">
+
+<pre><code class="python">>>> ports["ircd"]
+6667
+>>> bits(hash("ircd"))[-3:]
+000
+</code></pre>
+                </section>
+
+                <section>
+                    <h2>Unsuccessful lookup</h2>
+
+                    <img src="assets/img/collide5g.png" height="350px" class="img-no-style">
+
+<pre><code class="python">>>> ports["netstat"]
+Traceback (most recent call last):
+  ...
+KeyError: "netstat"
+>>> bits(hash("netstat"))[-3:]
+100
+</code></pre>
+                </section>
+            </section>
+
+            <section>
+                <h2>Deletion</h2>
+
+                <section>
+                    <img src="assets/img/collide5c.png" height="350px" class="img-no-style">
+
+<pre><code class="python">>>> del ports["smtp"]
+</code></pre>
+
+                    <p>Simply make the slot empty?</p>
+                </section>
+
+                <section>
+                    <img src="assets/img/collide5e.png" height="350px" class="img-no-style">
+
+<pre><code class="python"># What about ports["ircd"]?
+</code></pre>
+                </section>
+
+                <section>
+                    <p>On deletion, slot cannot be made empty.</p>
+
+                    <p><b>Use <i>dummy</i> keys.</b></p>
+
+                    <img src="assets/img/collide5h.png" height="350px" class="img-no-style fragment">
+                </section>
+            </section>
+
+            <section>
+                <h2>Resizing</h2>
+
+                <section>
+                    <p>Resize when ⅔ full.</p>
+
+                    <br>
+
+                    <p>When < 50k entries: size x4.</p>
+                    <p>When > 50k entries: size x2.</p>
+
+                    <br>
+
+                    <p>Rebuild the <i>dict</i> on resize.</p>
+                </section>
+            </section>
+
+            <section>
+                <h2>Performance</h2>
+
+                <section>
+<pre><code class="python">with open("/usr/share/dict/words") as f:
+    words = f.read().split()[:N]
+</code></pre>
+
+                    <img src="assets/img/average_probes.png" height="450px" style="margin-bottom: -20%" class="img-no-style">
+                </section>
+            </section>
+
+            <section>
+                <h2>Thank you</h2>
+
+                <img src="assets/img/python.png" class="img-no-style">
+            </section>
+<!--
+def bits(n):
+    n += 2**32
+    return bin(n)[-32:]
+-->
+        </div>
+    </div>
+
+    <!-- Including the JS libraries that we use -->
+    <script src="assets/js/jquery-2.1.3.min.js"></script>
+
+    <!-- Reveal.js is for presentations -->
+    <script src="assets/revealjs/lib/js/head.min.js"></script>
+    <script src="assets/revealjs/js/reveal.js"></script>
+
+    <!-- Socket.io library -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Main JavaScript file -->
+    <script src="assets/js/script.js"></script>
+
+    <script>
+        if( window.location.search.match( /print-pdf/gi ) ) {
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = 'assets/css/print/pdf.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        }
+    </script>
+
+</body>
+</html>
